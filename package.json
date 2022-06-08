@@ -1,7 +1,7 @@
 {
-  "name": "web3-provider",
+  "name": "y-web3-provider",
   "version": "1.0.0",
-  "homepage": "",
+  "homepage": "https://github.com/yyzkun/web3-provider",
   "keywords": [
     "web3",
     "web3-provider",
@@ -10,11 +10,12 @@
     "provider"
   ],
   "author": {
-    "name": "yzkun",
+    "name": "yyzkun",
     "url": "https://yyzkun.github.io/"
   },
   "license": "MIT",
   "dependencies": {
+    "user": "^0.0.0",
     "web3": "^1.7.3"
   }
 }

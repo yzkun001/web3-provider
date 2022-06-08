@@ -6,11 +6,11 @@
 
 ```js
 
-const { HttpProvider, WebsocketProvider } = require('web3-provider')
+const { HttpProvider, WebsocketProvider } = require('y-web3-provider')
 
 // or
 
-import { HttpProvider, WebsocketProvider} from 'web3-provider'
+import { HttpProvider, WebsocketProvider} from 'y-web3-provider'
 
 
 // web3
