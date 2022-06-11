@@ -1,7 +1,6 @@
 import Web3 from 'web3'
 import type { Account  } from 'web3-core'
 import { Chain } from './Chain';
-import { config } from './Config';
 
 /***
  * @name 钱包模块
@@ -17,42 +16,71 @@ export interface Provider {
     chain: Chain
 }
 
+interface nonceDataModel {
+    value: number;
+    time: number;
+}
+
 export class Wallet {
-    private nonce: {value: number, time: number} = {value: 0, time: 0};
-    private account: Account;
+    private accountMap: Map<string, Account> = new Map();;
+    private nonceMap: Map<string, nonceDataModel> = new Map();
     private context: Provider;
     constructor (privateKey: string, context: Provider) {
         this.context = context;
-        this.account = this.context.web3.eth.accounts.privateKeyToAccount(privateKey);
+        if (privateKey) {
+            this.addAccount(privateKey);
+        }
     }
 
-    get address () :string {
-        return this.account.address;
+    get address () :string[] {
+        let accountArray: string[] = new Array();
+        const mapIterator: IterableIterator<string> = this.accountMap.keys()
+        let i = 0;
+        while (i < this.accountMap.size) {
+            accountArray.push(mapIterator.next().value);
+            i++;
+        }
+        return accountArray;
     }
 
-    public async getNonce () {
+    public addAccount(privateKey: string) :void {
+        let account = this.context.web3.eth.accounts.privateKeyToAccount(privateKey);
+        if (!this.accountMap.get(account.address)) {
+            this.accountMap.set(account.address, account)
+            this.nonceMap.set(account.address, {value: 0, time: 0})
+        }
+    }
+
+    public removeAccount(address: string) :boolean {
+        return this.accountMap.delete(address) && this.nonceMap.delete(address);
+    }
+
+    public async getNonce (address: string) {
         const chainId: string = (await this.context.chain.getChainId()).toString();
         // 检查nonce
-        let prevTime: number = this.nonce.time;
+        const accountNonce: nonceDataModel = <nonceDataModel>this.nonceMap.get(address);
+        let prevTime: number = accountNonce.time;
+        let nonce = accountNonce.value;
         const configTime: number = this.context.config.block_time[chainId];
-        if (this.nonce.value === 0 || Date.now() - prevTime >= configTime) {
-            // update
-            this.updateNonce(await this.context.chain.getNonce(this.account.address));
+        if (accountNonce.value === 0 || Date.now() - prevTime >= configTime) {
+            nonce = await this.context.chain.getNonce(address)
+            this.updateNonce(address, nonce);
         }
-        return this.nonce.value;
+        return nonce;
     }
 
-    public async signedTx(tx: any) :Promise<string | undefined> {
-        const signedTx = await this.account.signTransaction(tx)
-        this.updateNonce(this.nonce.value + 1)
+    public async signedTx(address: string, tx: any) :Promise<string | undefined> {
+        let account: Account = <Account>this.accountMap.get(address);
+        const signedTx = await account.signTransaction(tx)
+        this.updateNonce(account.address, (<nonceDataModel>this.nonceMap.get(account.address)).value + 1)
         return signedTx.rawTransaction?.toString()
     }
 
-    private updateNonce (nonce :number) :void {
-        this.nonce = {
-            value: nonce,
-            time: Date.now()
-        }
+    private updateNonce (address: string, nonce :number) :void {
+        this.nonceMap.set(address, {
+            ...<nonceDataModel>this.nonceMap.get(address),
+            value: nonce
+        })
     }
     
 }

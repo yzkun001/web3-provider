@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -39,60 +50,80 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Wallet = void 0;
 var Wallet = /** @class */ (function () {
     function Wallet(privateKey, context) {
-        this.nonce = { value: 0, time: 0 };
+        this.accountMap = new Map();
+        this.nonceMap = new Map();
         this.context = context;
-        this.account = this.context.web3.eth.accounts.privateKeyToAccount(privateKey);
+        if (privateKey) {
+            this.addAccount(privateKey);
+        }
     }
+    ;
     Object.defineProperty(Wallet.prototype, "address", {
         get: function () {
-            return this.account.address;
+            var accountArray = new Array();
+            var mapIterator = this.accountMap.keys();
+            var i = 0;
+            while (i < this.accountMap.size) {
+                accountArray.push(mapIterator.next().value);
+                i++;
+            }
+            return accountArray;
         },
         enumerable: false,
         configurable: true
     });
-    Wallet.prototype.getNonce = function () {
+    Wallet.prototype.addAccount = function (privateKey) {
+        var account = this.context.web3.eth.accounts.privateKeyToAccount(privateKey);
+        if (!this.accountMap.get(account.address)) {
+            this.accountMap.set(account.address, account);
+            this.nonceMap.set(account.address, { value: 0, time: 0 });
+        }
+    };
+    Wallet.prototype.removeAccount = function (address) {
+        return this.accountMap.delete(address) && this.nonceMap.delete(address);
+    };
+    Wallet.prototype.getNonce = function (address) {
         return __awaiter(this, void 0, void 0, function () {
-            var chainId, prevTime, configTime, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var chainId, accountNonce, prevTime, nonce, configTime;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0: return [4 /*yield*/, this.context.chain.getChainId()];
                     case 1:
-                        chainId = (_b.sent()).toString();
-                        prevTime = this.nonce.time;
+                        chainId = (_a.sent()).toString();
+                        accountNonce = this.nonceMap.get(address);
+                        prevTime = accountNonce.time;
+                        nonce = accountNonce.value;
                         configTime = this.context.config.block_time[chainId];
-                        if (!(this.nonce.value === 0 || Date.now() - prevTime >= configTime)) return [3 /*break*/, 3];
-                        // update
-                        _a = this.updateNonce;
-                        return [4 /*yield*/, this.context.chain.getNonce(this.account.address)];
+                        if (!(accountNonce.value === 0 || Date.now() - prevTime >= configTime)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.context.chain.getNonce(address)];
                     case 2:
-                        // update
-                        _a.apply(this, [_b.sent()]);
-                        _b.label = 3;
-                    case 3: return [2 /*return*/, this.nonce.value];
+                        nonce = _a.sent();
+                        this.updateNonce(address, nonce);
+                        _a.label = 3;
+                    case 3: return [2 /*return*/, nonce];
                 }
             });
         });
     };
-    Wallet.prototype.signedTx = function (tx) {
+    Wallet.prototype.signedTx = function (address, tx) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var signedTx;
+            var account, signedTx;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, this.account.signTransaction(tx)];
+                    case 0:
+                        account = this.accountMap.get(address);
+                        return [4 /*yield*/, account.signTransaction(tx)];
                     case 1:
                         signedTx = _b.sent();
-                        this.updateNonce(this.nonce.value + 1);
+                        this.updateNonce(account.address, this.nonceMap.get(account.address).value + 1);
                         return [2 /*return*/, (_a = signedTx.rawTransaction) === null || _a === void 0 ? void 0 : _a.toString()];
                 }
             });
         });
     };
-    Wallet.prototype.updateNonce = function (nonce) {
-        this.nonce = {
-            value: nonce,
-            time: Date.now()
-        };
+    Wallet.prototype.updateNonce = function (address, nonce) {
+        this.nonceMap.set(address, __assign(__assign({}, this.nonceMap.get(address)), { value: nonce }));
     };
     return Wallet;
 }());

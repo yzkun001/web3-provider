@@ -123,11 +123,14 @@ var Provider = /** @class */ (function () {
                     case 3:
                         _a.trys.push([3, 6, , 7]);
                         tx = data.params[0];
-                        return [4 /*yield*/, this.wallet.getNonce()];
+                        if (!tx.from) {
+                            throw ('tx from invalid');
+                        }
+                        return [4 /*yield*/, this.wallet.getNonce(tx.from)];
                     case 4:
                         nonce = _a.sent();
                         tx.nonce = '0x' + parseInt(nonce + '').toString(16);
-                        return [4 /*yield*/, this.wallet.signedTx(tx)];
+                        return [4 /*yield*/, this.wallet.signedTx(tx.from, tx)];
                     case 5:
                         txSigned = _a.sent();
                         this.sendRequest({

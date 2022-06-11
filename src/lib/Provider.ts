@@ -77,9 +77,12 @@ export class Provider {
         this.nonceWait = true;
         try {
             const tx = data.params[0];
-            const nonce = await this.wallet.getNonce();
+            if (!tx.from) {
+                throw('tx from invalid')
+            }
+            const nonce = await this.wallet.getNonce(tx.from);
             tx.nonce = '0x' + parseInt(nonce + '').toString(16)
-            const txSigned = await this.wallet.signedTx(tx)
+            const txSigned = await this.wallet.signedTx(tx.from,tx)
             this.sendRequest({
                 id: data.id,
                 jsonrpc: '2.0',
