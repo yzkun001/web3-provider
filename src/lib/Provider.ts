@@ -2,8 +2,9 @@ import Web3 from 'web3'
 import type { provider } from 'web3-core'
 import { Wallet } from './Wallet'
 import { Chain } from './Chain'
-import { config } from './Config'
+import config from './Config'
 import { CallbackControll } from './Callback'
+import { KeyStore } from '../package/keythereum'
 
 interface dataParams {
     id: string | number,
@@ -22,7 +23,8 @@ interface RequestArguments {
 interface responseData {
     jsonrpc: string,
     id: number | string,
-    result: any
+    result: any,
+    error?: any
 }
 
 export class Provider {
@@ -50,6 +52,8 @@ export class Provider {
         this.chain = new Chain(this);
     }
     public send (data: dataParams, callback: Function) {
+        console.log('send')
+        console.log(data)
         this.callbacks.pushCallback(data.id.toString(), callback)
         switch (data.method) {
             case 'net_version':
@@ -62,6 +66,9 @@ export class Provider {
             case 'eth_sendTransaction':
                 this.sendTransaction(data);
                 break;
+            case 'eth_getTransactionCount':
+                this.getNonce(data);
+                break;
             default:
                 this.sendRequest(data);
                 break;
@@ -69,11 +76,39 @@ export class Provider {
     }
 
     request(data: RequestArguments):Promise<any> {
-        return Promise.reject('unsupported method')
+        return new Promise((resolve, reject) => {
+            this.send(<dataParams>{
+                id: Date.now(),
+                method: data.method,
+                params: data.params
+            }, (err: any, result: responseData | null) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(result?.result)
+                }
+            })
+        })
+    }
+
+    public addWalletFromPrivateKey(privateKey: string):void {
+        this.wallet.addAccount(privateKey);
+    }
+
+    public addWalletFromKeyStore(keyStore: KeyStore, passwd: string): void {
+        this.wallet.addAccountFromKeyStore(keyStore, passwd);
+    }
+
+    public removeWallet(address: string) :boolean {
+        return this.wallet.removeAccount(address);
     }
 
     public sendAsync (data: dataParams, callback: (error: Error | null, result?: responseData) => void) {
         this.send(data, callback)
+    }
+
+    private async getNonce(data: dataParams) :Promise<void> {
+        this.response(data.id, this.wrapResponse(data, await this.wallet.getNonce(data.params[0])))
     }
 
     private async chainId (data: dataParams) {
@@ -115,8 +150,9 @@ export class Provider {
     }
 
     private sendRequest (data: dataParams) {
-        this.originSendFunc(data, (err: any, res: responseData | null) => {
-            this.response(data.id, res, err)
+        this.originSendFunc(data, (err:
+             any, res: responseData | null) => {
+            this.response(data.id, res, err || res?.error)
         })
     }
 

@@ -37,10 +37,14 @@ const web3 = new Web3(new HttpProvider(rpc))
 
 // import account
 //private
-web3.currentProvider.wallet.addAccount(privateKey);
+web3.currentProvider.addWalletFromPrivateKey(privateKey);
 // keystote
-web3.currentProvider.wallet.addAccountFromKeyStore(keyStore, passwd);
+web3.currentProvider.addWalletFromKeyStore(keyStore, passwd);
 
+
+// remobe account
+
+web3.currentProvider.removeWallet(address);
 
 
 ```

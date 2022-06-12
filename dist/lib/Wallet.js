@@ -88,6 +88,7 @@ var Wallet = /** @class */ (function () {
         }
     };
     Wallet.prototype.removeAccount = function (address) {
+        address = this.context.web3.utils.toChecksumAddress(address);
         return this.accountMap.delete(address) && this.nonceMap.delete(address);
     };
     Wallet.prototype.getNonce = function (address) {
@@ -98,6 +99,8 @@ var Wallet = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.context.chain.getChainId()];
                     case 1:
                         chainId = (_a.sent()).toString();
+                        // 检查nonce
+                        address = this.context.web3.utils.toChecksumAddress(address);
                         accountNonce = this.nonceMap.get(address);
                         prevTime = accountNonce.time;
                         nonce = accountNonce.value;
@@ -120,6 +123,7 @@ var Wallet = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        address = this.context.web3.utils.toChecksumAddress(address);
                         account = this.accountMap.get(address);
                         return [4 /*yield*/, account.signTransaction(tx)];
                     case 1:
@@ -131,6 +135,7 @@ var Wallet = /** @class */ (function () {
         });
     };
     Wallet.prototype.updateNonce = function (address, nonce) {
+        address = this.context.web3.utils.toChecksumAddress(address);
         this.nonceMap.set(address, __assign(__assign({}, this.nonceMap.get(address)), { value: nonce }));
     };
     return Wallet;

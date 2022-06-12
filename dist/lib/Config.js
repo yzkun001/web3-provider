@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.config = void 0;
-exports.config = {
+var config = {
     block_time: {
         '1': 120000,
         '4': 12000,
@@ -11,3 +10,4 @@ exports.config = {
         '256': 3000
     }
 };
+exports.default = config;

@@ -43,11 +43,11 @@ exports.Provider = void 0;
 var web3_1 = __importDefault(require("web3"));
 var Wallet_1 = require("./Wallet");
 var Chain_1 = require("./Chain");
-var Config_1 = require("./Config");
+var Config_1 = __importDefault(require("./Config"));
 var Callback_1 = require("./Callback");
 var Provider = /** @class */ (function () {
     function Provider(rpc, privatekey) {
-        this.config = Config_1.config;
+        this.config = Config_1.default;
         this.callbacks = new Callback_1.CallbackControll();
         this.nonceWait = false;
         this.promiseWait = [];
@@ -67,6 +67,8 @@ var Provider = /** @class */ (function () {
         this.chain = new Chain_1.Chain(this);
     }
     Provider.prototype.send = function (data, callback) {
+        console.log('send');
+        console.log(data);
         this.callbacks.pushCallback(data.id.toString(), callback);
         switch (data.method) {
             case 'net_version':
@@ -79,16 +81,60 @@ var Provider = /** @class */ (function () {
             case 'eth_sendTransaction':
                 this.sendTransaction(data);
                 break;
+            case 'eth_getTransactionCount':
+                this.getNonce(data);
+                break;
             default:
                 this.sendRequest(data);
                 break;
         }
     };
     Provider.prototype.request = function (data) {
-        return Promise.reject('unsupported method');
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.send({
+                id: Date.now(),
+                method: data.method,
+                params: data.params
+            }, function (err, result) {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(result === null || result === void 0 ? void 0 : result.result);
+                }
+            });
+        });
+    };
+    Provider.prototype.addWalletFromPrivateKey = function (privateKey) {
+        this.wallet.addAccount(privateKey);
+    };
+    Provider.prototype.addWalletFromKeyStore = function (keyStore, passwd) {
+        this.wallet.addAccountFromKeyStore(keyStore, passwd);
+    };
+    Provider.prototype.removeWallet = function (address) {
+        return this.wallet.removeAccount(address);
     };
     Provider.prototype.sendAsync = function (data, callback) {
         this.send(data, callback);
+    };
+    Provider.prototype.getNonce = function (data) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, _c, _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        _a = this.response;
+                        _b = [data.id];
+                        _c = this.wrapResponse;
+                        _d = [data];
+                        return [4 /*yield*/, this.wallet.getNonce(data.params[0])];
+                    case 1:
+                        _a.apply(this, _b.concat([_c.apply(this, _d.concat([_e.sent()]))]));
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     Provider.prototype.chainId = function (data) {
         return __awaiter(this, void 0, void 0, function () {
@@ -166,7 +212,7 @@ var Provider = /** @class */ (function () {
     Provider.prototype.sendRequest = function (data) {
         var _this = this;
         this.originSendFunc(data, function (err, res) {
-            _this.response(data.id, res, err);
+            _this.response(data.id, res, err || (res === null || res === void 0 ? void 0 : res.error));
         });
     };
     Provider.prototype.wrapResponse = function (data, result) {

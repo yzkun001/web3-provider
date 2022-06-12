@@ -1,4 +1,4 @@
-export const config = {
+const config = {
     block_time: {
     '1': 120000,
     '4': 12000,
@@ -8,3 +8,5 @@ export const config = {
     '256': 3000
     }
 }
+
+export default config;

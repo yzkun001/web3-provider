@@ -60,12 +60,14 @@ export class Wallet {
     }
 
     public removeAccount(address: string) :boolean {
+        address = this.context.web3.utils.toChecksumAddress(address);
         return this.accountMap.delete(address) && this.nonceMap.delete(address);
     }
 
     public async getNonce (address: string) {
         const chainId: string = (await this.context.chain.getChainId()).toString();
         // 检查nonce
+        address = this.context.web3.utils.toChecksumAddress(address)
         const accountNonce: nonceDataModel = <nonceDataModel>this.nonceMap.get(address);
         let prevTime: number = accountNonce.time;
         let nonce = accountNonce.value;
@@ -78,6 +80,7 @@ export class Wallet {
     }
 
     public async signedTx(address: string, tx: any) :Promise<string | undefined> {
+        address = this.context.web3.utils.toChecksumAddress(address);
         let account: Account = <Account>this.accountMap.get(address);
         const signedTx = await account.signTransaction(tx)
         this.updateNonce(account.address, (<nonceDataModel>this.nonceMap.get(account.address)).value + 1)
@@ -85,6 +88,7 @@ export class Wallet {
     }
 
     private updateNonce (address: string, nonce :number) :void {
+        address = this.context.web3.utils.toChecksumAddress(address);
         this.nonceMap.set(address, {
             ...<nonceDataModel>this.nonceMap.get(address),
             value: nonce
