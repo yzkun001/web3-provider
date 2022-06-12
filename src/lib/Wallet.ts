@@ -1,4 +1,7 @@
 import Web3 from 'web3'
+import keythereum from '../package/keythereum'
+import type { KeyStore } from '../package/keythereum'
+// import type { store } from 'keythereum'
 import type { Account  } from 'web3-core'
 import { Chain } from './Chain';
 
@@ -25,7 +28,7 @@ export class Wallet {
     private accountMap: Map<string, Account> = new Map();;
     private nonceMap: Map<string, nonceDataModel> = new Map();
     private context: Provider;
-    constructor (privateKey: string, context: Provider) {
+    constructor (context: Provider, privateKey?: string, ) {
         this.context = context;
         if (privateKey) {
             this.addAccount(privateKey);
@@ -41,6 +44,11 @@ export class Wallet {
             i++;
         }
         return accountArray;
+    }
+
+    public addAccountFromKeyStore(store: KeyStore, passwd: string) :void {
+        const privateyKey: string = '0x' + keythereum.recover(passwd, store).toString('hex')
+        this.addAccount(privateyKey);
     }
 
     public addAccount(privateKey: string) :void {

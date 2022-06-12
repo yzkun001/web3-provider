@@ -1,6 +1,6 @@
 {
   "name": "y-web3-provider",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "homepage": "https://github.com/yyzkun/web3-provider",
   "keywords": [
     "web3",
@@ -15,6 +15,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "keythereum": "^1.2.0",
     "user": "^0.0.0",
     "web3": "^1.7.3"
   }

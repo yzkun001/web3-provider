@@ -63,7 +63,7 @@ var Provider = /** @class */ (function () {
         }
         this.originSendFunc = originProvider.send.bind(originProvider);
         this.web3 = new web3_1.default(originProvider);
-        this.wallet = new Wallet_1.Wallet(privatekey, this);
+        this.wallet = new Wallet_1.Wallet(this, privatekey);
         this.chain = new Chain_1.Chain(this);
     }
     Provider.prototype.send = function (data, callback) {
@@ -83,6 +83,12 @@ var Provider = /** @class */ (function () {
                 this.sendRequest(data);
                 break;
         }
+    };
+    Provider.prototype.request = function (data) {
+        return Promise.reject('unsupported method');
+    };
+    Provider.prototype.sendAsync = function (data, callback) {
+        this.send(data, callback);
     };
     Provider.prototype.chainId = function (data) {
         return __awaiter(this, void 0, void 0, function () {

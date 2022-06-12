@@ -12,6 +12,12 @@ interface dataParams {
     params: any[]
 }
 
+interface RequestArguments {
+    method: string;
+    params?: any;
+    [key: string]: any;
+}
+
 
 interface responseData {
     jsonrpc: string,
@@ -29,7 +35,7 @@ export class Provider {
     private nonceWait: boolean = false;
     private promiseWait: any[] = [];
 
-    constructor (rpc: string, privatekey: string) {
+    constructor (rpc: string, privatekey?: string) {
         let originProvider: provider;
         if (/^http/.test(rpc)) {
             originProvider = new Web3.providers.HttpProvider(rpc);
@@ -40,7 +46,7 @@ export class Provider {
         }
         this.originSendFunc = originProvider.send.bind(originProvider);
         this.web3 = new Web3(originProvider);
-        this.wallet = new Wallet(privatekey, this);
+        this.wallet = new Wallet(this, privatekey);
         this.chain = new Chain(this);
     }
     public send (data: dataParams, callback: Function) {
@@ -60,6 +66,14 @@ export class Provider {
                 this.sendRequest(data);
                 break;
         }
+    }
+
+    request(data: RequestArguments):Promise<any> {
+        return Promise.reject('unsupported method')
+    }
+
+    public sendAsync (data: dataParams, callback: (error: Error | null, result?: responseData) => void) {
+        this.send(data, callback)
     }
 
     private async chainId (data: dataParams) {

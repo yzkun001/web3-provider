@@ -46,10 +46,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Wallet = void 0;
+var keythereum_1 = __importDefault(require("../package/keythereum"));
 var Wallet = /** @class */ (function () {
-    function Wallet(privateKey, context) {
+    function Wallet(context, privateKey) {
         this.accountMap = new Map();
         this.nonceMap = new Map();
         this.context = context;
@@ -72,6 +76,10 @@ var Wallet = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Wallet.prototype.addAccountFromKeyStore = function (store, passwd) {
+        var privateyKey = '0x' + keythereum_1.default.recover(passwd, store).toString('hex');
+        this.addAccount(privateyKey);
+    };
     Wallet.prototype.addAccount = function (privateKey) {
         var account = this.context.web3.eth.accounts.privateKeyToAccount(privateKey);
         if (!this.accountMap.get(account.address)) {
