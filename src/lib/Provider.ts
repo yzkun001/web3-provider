@@ -52,8 +52,6 @@ export class Provider {
         this.chain = new Chain(this);
     }
     public send (data: dataParams, callback: Function) {
-        console.log('send')
-        console.log(data)
         this.callbacks.pushCallback(data.id.toString(), callback)
         switch (data.method) {
             case 'net_version':
@@ -131,6 +129,12 @@ export class Provider {
             }
             const nonce = await this.wallet.getNonce(tx.from);
             tx.nonce = '0x' + parseInt(nonce + '').toString(16)
+            if (!tx.gas) {
+                tx.gas = (await this.request({
+                    method: 'eth_estimateGas',
+                    params: [tx]
+                })) * 1.5;
+            }
             const txSigned = await this.wallet.signedTx(tx.from,tx)
             this.sendRequest({
                 id: data.id,

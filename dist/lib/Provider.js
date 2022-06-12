@@ -67,8 +67,6 @@ var Provider = /** @class */ (function () {
         this.chain = new Chain_1.Chain(this);
     }
     Provider.prototype.send = function (data, callback) {
-        console.log('send');
-        console.log(data);
         this.callbacks.pushCallback(data.id.toString(), callback);
         switch (data.method) {
             case 'net_version':
@@ -156,10 +154,10 @@ var Provider = /** @class */ (function () {
     };
     Provider.prototype.sendTransaction = function (data) {
         return __awaiter(this, void 0, void 0, function () {
-            var promise, tx, nonce, txSigned, error_1, cb;
+            var promise, tx, nonce, _a, txSigned, error_1, cb;
             var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (!this.nonceWait) return [3 /*break*/, 2];
                         promise = new Promise(function (resolve, reject) {
@@ -167,36 +165,45 @@ var Provider = /** @class */ (function () {
                         });
                         return [4 /*yield*/, promise];
                     case 1:
-                        _a.sent();
-                        _a.label = 2;
+                        _b.sent();
+                        _b.label = 2;
                     case 2:
                         this.nonceWait = true;
-                        _a.label = 3;
+                        _b.label = 3;
                     case 3:
-                        _a.trys.push([3, 6, , 7]);
+                        _b.trys.push([3, 8, , 9]);
                         tx = data.params[0];
                         if (!tx.from) {
                             throw ('tx from invalid');
                         }
                         return [4 /*yield*/, this.wallet.getNonce(tx.from)];
                     case 4:
-                        nonce = _a.sent();
+                        nonce = _b.sent();
                         tx.nonce = '0x' + parseInt(nonce + '').toString(16);
-                        return [4 /*yield*/, this.wallet.signedTx(tx.from, tx)];
+                        if (!!tx.gas) return [3 /*break*/, 6];
+                        _a = tx;
+                        return [4 /*yield*/, this.request({
+                                method: 'eth_estimateGas',
+                                params: [tx]
+                            })];
                     case 5:
-                        txSigned = _a.sent();
+                        _a.gas = (_b.sent()) * 1.5;
+                        _b.label = 6;
+                    case 6: return [4 /*yield*/, this.wallet.signedTx(tx.from, tx)];
+                    case 7:
+                        txSigned = _b.sent();
                         this.sendRequest({
                             id: data.id,
                             jsonrpc: '2.0',
                             method: 'eth_sendRawTransaction',
                             params: [txSigned]
                         });
-                        return [3 /*break*/, 7];
-                    case 6:
-                        error_1 = _a.sent();
+                        return [3 /*break*/, 9];
+                    case 8:
+                        error_1 = _b.sent();
                         this.response(data.id, null, error_1);
-                        return [3 /*break*/, 7];
-                    case 7:
+                        return [3 /*break*/, 9];
+                    case 9:
                         cb = this.promiseWait.shift();
                         if (cb) {
                             cb();
