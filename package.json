@@ -1,7 +1,8 @@
 {
   "name": "y-web3-provider",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "homepage": "https://github.com/yyzkun/web3-provider",
+  "main": "./dist/index.js",
   "keywords": [
     "web3",
     "web3-provider",
