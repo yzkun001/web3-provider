@@ -76,7 +76,7 @@ export class Provider {
     public request(data: RequestArguments):Promise<any> {
         return new Promise((resolve, reject) => {
             this.send(<dataParams>{
-                id: Date.now(),
+                id: Date.now() + '' + Math.random() + '_request',
                 method: data.method,
                 params: data.params
             }, (err: any, result: responseData | null) => {

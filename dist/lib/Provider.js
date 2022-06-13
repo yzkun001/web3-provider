@@ -91,7 +91,7 @@ var Provider = /** @class */ (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this.send({
-                id: Date.now(),
+                id: Date.now() + '' + Math.random() + '_request',
                 method: data.method,
                 params: data.params
             }, function (err, result) {
