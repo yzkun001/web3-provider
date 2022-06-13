@@ -51,7 +51,7 @@ export class Provider {
         this.wallet = new Wallet(this, privatekey);
         this.chain = new Chain(this);
     }
-    public send (data: dataParams, callback: Function) {
+    public send (data: dataParams, callback: Function) :void {
         this.callbacks.pushCallback(data.id.toString(), callback)
         switch (data.method) {
             case 'net_version':
@@ -73,7 +73,7 @@ export class Provider {
         }
     }
 
-    request(data: RequestArguments):Promise<any> {
+    public request(data: RequestArguments):Promise<any> {
         return new Promise((resolve, reject) => {
             this.send(<dataParams>{
                 id: Date.now(),
@@ -101,7 +101,7 @@ export class Provider {
         return this.wallet.removeAccount(address);
     }
 
-    public sendAsync (data: dataParams, callback: (error: Error | null, result?: responseData) => void) {
+    public sendAsync (data: dataParams, callback: (error: Error | null, result?: responseData) => void):void {
         this.send(data, callback)
     }
 

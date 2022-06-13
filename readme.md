@@ -24,7 +24,7 @@ const web3 = new Web3(new HttpProvider('rpc', 'privateKey'))
 
 ### v1.1.3
 
-- 初始化providerKey参数改为可选，可以在使用中再倒入账户
+- 初始化providerKey参数改为可选，可以在使用中再导入账户
 
 
 - demo
