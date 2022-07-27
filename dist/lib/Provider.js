@@ -154,10 +154,10 @@ var Provider = /** @class */ (function () {
     };
     Provider.prototype.sendTransaction = function (data) {
         return __awaiter(this, void 0, void 0, function () {
-            var promise, tx, nonce, _a, txSigned, error_1, cb;
+            var promise, tx, nonce, _a, _b, _c, _d, txSigned, error_1, cb;
             var _this = this;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_e) {
+                switch (_e.label) {
                     case 0:
                         if (!this.nonceWait) return [3 /*break*/, 2];
                         promise = new Promise(function (resolve, reject) {
@@ -165,33 +165,36 @@ var Provider = /** @class */ (function () {
                         });
                         return [4 /*yield*/, promise];
                     case 1:
-                        _b.sent();
-                        _b.label = 2;
+                        _e.sent();
+                        _e.label = 2;
                     case 2:
                         this.nonceWait = true;
-                        _b.label = 3;
+                        _e.label = 3;
                     case 3:
-                        _b.trys.push([3, 8, , 9]);
+                        _e.trys.push([3, 8, , 9]);
                         tx = data.params[0];
                         if (!tx.from) {
                             throw ('tx from invalid');
                         }
                         return [4 /*yield*/, this.wallet.getNonce(tx.from)];
                     case 4:
-                        nonce = _b.sent();
+                        nonce = _e.sent();
                         tx.nonce = '0x' + parseInt(nonce + '').toString(16);
                         if (!!tx.gas) return [3 /*break*/, 6];
                         _a = tx;
+                        _b = '0x';
+                        _c = parseInt;
+                        _d = '';
                         return [4 /*yield*/, this.request({
                                 method: 'eth_estimateGas',
                                 params: [tx]
                             })];
                     case 5:
-                        _a.gas = (_b.sent()) * 1.5;
-                        _b.label = 6;
+                        _a.gas = _b + _c.apply(void 0, [_d + (_e.sent()) * 1.5]).toString(16);
+                        _e.label = 6;
                     case 6: return [4 /*yield*/, this.wallet.signedTx(tx.from, tx)];
                     case 7:
-                        txSigned = _b.sent();
+                        txSigned = _e.sent();
                         this.sendRequest({
                             id: data.id,
                             jsonrpc: '2.0',
@@ -200,7 +203,7 @@ var Provider = /** @class */ (function () {
                         });
                         return [3 /*break*/, 9];
                     case 8:
-                        error_1 = _b.sent();
+                        error_1 = _e.sent();
                         this.response(data.id, null, error_1);
                         return [3 /*break*/, 9];
                     case 9:
